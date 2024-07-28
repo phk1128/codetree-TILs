@@ -158,7 +158,7 @@ public class Main {
         }
 
         //멈춘 영역이 숲 내부일 경우에만 idx를 방문처리하고, 골렘의 정보를 업데이트한다.
-        if (r < 3) {
+        if (r <= 3) {
             return false;
         }
         golem.setE(e);
