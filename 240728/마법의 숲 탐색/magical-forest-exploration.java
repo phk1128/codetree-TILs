@@ -10,8 +10,6 @@ public class Main {
     private static Golem[] golems;
     private static int[][] ds;
     private static int[][] golemVisited;
-    private static boolean[][] exit;
-
 
     static class Golem {
 
@@ -48,7 +46,6 @@ public class Main {
 
         golems = new Golem[K + 1];
         ds = new int[][]{{-1, 0}, {0, 1}, {1, 0}, {0, -1}}; // 0,1,2,3 북동남서
-        exit = new boolean[R + 2][C + 1];
 
         for (int i = 1; i <= K; i++) {
             st = new StringTokenizer(br.readLine());
@@ -57,26 +54,16 @@ public class Main {
             golems[i] = new Golem(i, c, e);
         }
 
-        golemVisited = new int[R + 2][C + 1];
-        List<Golem> movedGolems = new ArrayList<>();
+        golemVisited = new int[R + 3][C + 1];
         int answer = 0;
         for (int i = 1; i <= K; i++) {
-            boolean flag = false;
-            if (moveGolem(golems[i])) {
-                movedGolems.add(golems[i]);
-                flag = true;
-            }
-
-            if (flag && i < K) {
+            Golem golem = golems[i];
+            if (moveGolem(golem)) {
+                int[] elPos = golem.elPos;
+                answer += (getScore(elPos[0], elPos[1]) - 2);
                 continue;
             }
-
-            for (Golem golem : movedGolems) {
-                int[] elPos = golem.elPos;
-                answer += (getScore(elPos[0], elPos[1]) - 1);
-            }
-            movedGolems.clear();
-            golemVisited = new int[R + 2][C + 1];
+            golemVisited = new int[R + 3][C + 1];
         }
 
         bw.write(String.valueOf(answer));
@@ -87,7 +74,7 @@ public class Main {
 
     //정령을 이동시켜 최대 스코어를 가져온다.
     private static int getScore(int r, int c) {
-        boolean[][] elVisited = new boolean[R + 2][C + 1];
+        boolean[][] elVisited = new boolean[R + 3][C + 1];
         Queue<int[]> queue = new ArrayDeque<>();
         queue.offer(new int[]{r, c});
         int score = 0;
@@ -101,14 +88,13 @@ public class Main {
             Golem golem = golems[idx];
             int eR = golem.elPos[0] + ds[golem.e][0];
             int eC = golem.elPos[1] + ds[golem.e][1];
-            exit[eR][eC] = true;
 
             score = Math.max(cR, score);
             for (int[] d : ds) {
                 int nR = cR + d[0];
                 int nC = cC + d[1];
 
-                if (!(nR >= 2 && nR <= R + 1 && nC >= 1 && nC <= C)) {
+                if (!(nR >= 2 && nR <= R + 2 && nC >= 1 && nC <= C)) {
                     continue;
                 }
 
@@ -125,7 +111,7 @@ public class Main {
                 queue.offer(new int[]{nR, nC});
             }
         }
-        
+
         return score;
     }
 
@@ -137,6 +123,7 @@ public class Main {
         int e = golem.e;
 
         while (true) {
+
             boolean isDown = false;
             boolean isLeft = false;
             boolean isRight = false;
@@ -146,7 +133,7 @@ public class Main {
                 isDown = true;
             }
 
-            if (r == R) {
+            if (r == R + 1) {
                 break;
             }
 
@@ -200,7 +187,7 @@ public class Main {
         for (int[] d : ds) {
             int nR = r + d[0];
             int nC = c + d[1];
-            if (!(nR >= 0 && nR <= R + 1 && nC >= 1 && nC <= C)) {
+            if (!(nR >= 0 && nR <= R + 2 && nC >= 1 && nC <= C)) {
                 return false;
             }
             if (golemVisited[nR][nC] != 0) {
@@ -212,8 +199,8 @@ public class Main {
     }
 }
 
-//맵의 행크기를 R + 2한다. 실제 숲의 영역은 2 ~ (R + 1)이 된다.
-//숲의 영역의 R은 실제보다 +1이므로 계산한 스코어에서 -1을 해줘야한다.
+//맵의 행크기를 R + 3한다. 실제 숲의 영역은 3 ~ (R + 2)이 된다.
+//숲의 영역의 R은 실제보다 +2이므로 계산한 스코어에서 -2을 해줘야한다.
 //골렘은 회전 후 내려가는것 까지 가능해야 회전한다. 즉, 회전만하고 내려갈 수 없다면 회전하지 못한다.
 //회전의 순서는 왼쪽이 먼저이고, 왼쪽으로 회전할 수 없다면 오른쪽으로 회전한다. 만약 왼쪽, 오른쪽 둘다 회전하지 못한다면 그 자리에 멈춘다.
 //이동이 끝난 후에 현재 골렘의 위치가 숲 내부라면 골렘의 정보를 업데이트한다.
