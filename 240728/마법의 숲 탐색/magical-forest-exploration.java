@@ -10,6 +10,7 @@ public class Main {
     private static Golem[] golems;
     private static int[][] ds;
     private static int[][] golemVisited;
+    private static boolean[][] exit;
 
 
     static class Golem {
@@ -47,6 +48,7 @@ public class Main {
 
         golems = new Golem[K + 1];
         ds = new int[][]{{-1, 0}, {0, 1}, {1, 0}, {0, -1}}; // 0,1,2,3 북동남서
+        exit = new boolean[R + 2][C + 1];
 
         for (int i = 1; i <= K; i++) {
             st = new StringTokenizer(br.readLine());
@@ -68,7 +70,7 @@ public class Main {
             if (flag && i < K) {
                 continue;
             }
-            
+
             for (Golem golem : movedGolems) {
                 int[] elPos = golem.elPos;
                 answer += (getScore(elPos[0], elPos[1]) - 1);
@@ -99,6 +101,7 @@ public class Main {
             Golem golem = golems[idx];
             int eR = golem.elPos[0] + ds[golem.e][0];
             int eC = golem.elPos[1] + ds[golem.e][1];
+            exit[eR][eC] = true;
 
             score = Math.max(cR, score);
             for (int[] d : ds) {
@@ -114,7 +117,7 @@ public class Main {
                 }
 
                 //새로운 위치가 이전 골렘의idx와 다르고 현재위치가 출구위치가 아니라면 정령은 이동할 수 없다.
-                if (golemVisited[nR][nC] != idx && !(cC == eR && cR == eC)) {
+                if (golemVisited[nR][nC] != idx && !(cR == eR && cC == eC)) {
                     continue;
                 }
 
@@ -122,7 +125,7 @@ public class Main {
                 queue.offer(new int[]{nR, nC});
             }
         }
-
+        
         return score;
     }
 
