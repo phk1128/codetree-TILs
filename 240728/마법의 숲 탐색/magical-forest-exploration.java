@@ -68,7 +68,7 @@ public class Main {
             if (flag && i < K) {
                 continue;
             }
-
+            
             for (Golem golem : movedGolems) {
                 int[] elPos = golem.elPos;
                 answer += (getScore(elPos[0], elPos[1]) - 1);
@@ -105,7 +105,7 @@ public class Main {
                 int nR = cR + d[0];
                 int nC = cC + d[1];
 
-                if (!(nR >= 1 && nR <= R + 1 && nC >= 1 && nC <= C)) {
+                if (!(nR >= 2 && nR <= R + 1 && nC >= 1 && nC <= C)) {
                     continue;
                 }
 
@@ -113,10 +113,11 @@ public class Main {
                     continue;
                 }
 
-                //새로운 위치가 이전 골렘의idx와 다르고 출구위치가 아니라면 정령은 이동할 수 없다.
-                if (golemVisited[nR][nC] != idx && (nR != eR && nC != eC)) {
+                //새로운 위치가 이전 골렘의idx와 다르고 현재위치가 출구위치가 아니라면 정령은 이동할 수 없다.
+                if (golemVisited[nR][nC] != idx && !(cC == eR && cR == eC)) {
                     continue;
                 }
+
                 elVisited[nR][nC] = true;
                 queue.offer(new int[]{nR, nC});
             }
@@ -167,7 +168,7 @@ public class Main {
         }
 
         //멈춘 영역이 숲 내부일 경우에만 idx를 방문처리하고, 골렘의 정보를 업데이트한다.
-        if (!isMove(r, c)) {
+        if (r < 3) {
             return false;
         }
         golem.setE(e);
@@ -176,6 +177,7 @@ public class Main {
         return true;
 
     }
+
 
     // 골렘idx으로 방문처리
     private static void check(int r, int c, int idx) {
@@ -195,7 +197,7 @@ public class Main {
         for (int[] d : ds) {
             int nR = r + d[0];
             int nC = c + d[1];
-            if (!(nR >= 1 && nR <= R + 1 && nC >= 1 && nC <= C)) {
+            if (!(nR >= 0 && nR <= R + 1 && nC >= 1 && nC <= C)) {
                 return false;
             }
             if (golemVisited[nR][nC] != 0) {
@@ -213,4 +215,4 @@ public class Main {
 //회전의 순서는 왼쪽이 먼저이고, 왼쪽으로 회전할 수 없다면 오른쪽으로 회전한다. 만약 왼쪽, 오른쪽 둘다 회전하지 못한다면 그 자리에 멈춘다.
 //이동이 끝난 후에 현재 골렘의 위치가 숲 내부라면 골렘의 정보를 업데이트한다.
 //정령이 이동할때 출구를 찾기 위해 방문처리는 골렘의 idx로 한다.
-//새로운 위치가 이전 골렘의idx와 다르고 출구위치가 아니라면 정령은 이동할 수 없다.
+//새로운 위치가 이전 골렘의idx와 다르고 현재위치가 출구위치가 아니라면 정령은 이동할 수 없다.
