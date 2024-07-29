@@ -89,8 +89,7 @@ public class Main {
                 copyOfMapView = turnedMap;
             }
             PriorityQueue<int[]> empties = result.empties;
-            Queue<Integer> copyOfNums = new ArrayDeque<>(nums);
-            addNum(copyOfMapView, copyOfNums, empties);
+            addNum(copyOfMapView, empties);
 
             while (true) {
                 int score = getScore(copyOfMapView);
@@ -98,7 +97,7 @@ public class Main {
                     break;
                 }
                 total += score;
-                addNum(copyOfMapView, copyOfNums, tmpEmpties);
+                addNum(copyOfMapView, tmpEmpties);
             }
             mapView = copyOfMapView;
             if (total > 0) {
@@ -114,7 +113,7 @@ public class Main {
     }
 
 
-    private static void addNum(int[][] mapView, Queue<Integer> nums, PriorityQueue<int[]> empties) {
+    private static void addNum(int[][] mapView, PriorityQueue<int[]> empties) {
         if (nums.isEmpty() || empties.isEmpty()) {
             return;
         }
