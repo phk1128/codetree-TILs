@@ -8,8 +8,9 @@ public class Main {
     private static final int C = 5;
     private static boolean[][] visited;
     private static int[][] ds;
-    private static PriorityQueue<int[]> tmpEmpties;
+    private static PriorityQueue<int[]> empties;
     private static Queue<Integer> nums;
+    private static List<int[]> targets;
 
     static class Result {
 
@@ -17,14 +18,12 @@ public class Main {
         int cC;
         int score;
         int turn;
-        PriorityQueue<int[]> empties;
 
-        public Result(int cR, int cC, int score, int turn, PriorityQueue<int[]> empties) {
+        public Result(int cR, int cC, int score, int turn) {
             this.cR = cR;
             this.cC = cC;
             this.score = score;
             this.turn = turn;
-            this.empties = empties;
         }
 
     }
@@ -64,7 +63,7 @@ public class Main {
                     for (int turn = 1; turn < 4; turn++) {
                         int[][] turnedMap = getTurnedMap(r, c, copyOfMapView);
                         int score = getScore(turnedMap);
-                        results.add(new Result(r, c, score, turn, tmpEmpties));
+                        results.add(new Result(r, c, score, turn));
                         copyOfMapView = turnedMap;
                     }
                 }
@@ -82,23 +81,22 @@ public class Main {
             });
             Result result = results.get(0);
             int turn = result.turn;
-            total = result.score;
             int[][] copyOfMapView = copyOfArr(mapView);
             while (turn-- > 0) {
                 int[][] turnedMap = getTurnedMap(result.cR, result.cC, copyOfMapView);
                 copyOfMapView = turnedMap;
             }
-            PriorityQueue<int[]> empties = result.empties;
-            addNum(copyOfMapView, empties);
 
             while (true) {
                 int score = getScore(copyOfMapView);
                 if (score == 0) {
                     break;
                 }
+                updateEmpties(copyOfMapView);
+                addNum(copyOfMapView);
                 total += score;
-                addNum(copyOfMapView, tmpEmpties);
             }
+
             mapView = copyOfMapView;
             if (total > 0) {
                 sb.append(total);
@@ -113,7 +111,7 @@ public class Main {
     }
 
 
-    private static void addNum(int[][] mapView, PriorityQueue<int[]> empties) {
+    private static void addNum(int[][] mapView) {
         if (nums.isEmpty() || empties.isEmpty()) {
             return;
         }
@@ -129,25 +127,18 @@ public class Main {
 
     private static int getScore(int[][] mapView) {
         int score = 0;
-        tmpEmpties = new PriorityQueue<>((e1, e2) -> {
-            if (e1[1] != e2[1]) {
-                return e1[1] - e2[1];
-            }
-            return e2[0] - e1[0];
-        });
+        targets = new ArrayList<>();
         visited = new boolean[R + 1][C + 1];
         for (int r = 1; r <= R; r++) {
             for (int c = 1; c <= C; c++) {
-                if (visited[r][c] || mapView[r][c] == 0) {
+                if (visited[r][c]) {
                     continue;
                 }
-                List<int[]> piece = new ArrayList<>();
                 int num = mapView[r][c];
-                visited[r][c] = true;
-                int count = getCount(r, c, num, piece, mapView);
+                int count = getCount(r, c, num, mapView);
                 if (count >= 3) {
                     score += count;
-                    tmpEmpties.addAll(piece);
+                    targets.add(new int[]{r, c});
                 }
             }
         }
@@ -155,11 +146,23 @@ public class Main {
         return score;
     }
 
-    private static int getCount(int r, int c, int num, List<int[]> piece, int[][] mapView) {
+    private static void updateEmpties(int[][] mapView) {
+        visited = new boolean[R + 1][C + 1];
+        empties = new PriorityQueue<>((e1, e2) -> {
+            if (e1[1] != e2[1]) {
+                return e1[1] - e2[1];
+            }
+            return e2[0] - e1[0];
+        });
+        for (int[] target : targets) {
+            int num = mapView[target[0]][target[1]];
+            offerEmpty(target[0], target[1], num, mapView);
+        }
+    }
 
+    private static void offerEmpty(int r, int c, int num, int[][] mapView) {
         visited[r][c] = true;
-        int count = 1;
-        piece.add(new int[]{r, c});
+        empties.offer(new int[]{r, c});
 
         for (int[] d : ds) {
             int nR = r + d[0];
@@ -174,7 +177,29 @@ public class Main {
             if (num != mapView[nR][nC]) {
                 continue;
             }
-            count += getCount(nR, nC, num, piece, mapView);
+            offerEmpty(nR, nC, num, mapView);
+        }
+    }
+
+    private static int getCount(int r, int c, int num, int[][] mapView) {
+
+        visited[r][c] = true;
+        int count = 1;
+
+        for (int[] d : ds) {
+            int nR = r + d[0];
+            int nC = c + d[1];
+
+            if (!isInBound(nR, nC)) {
+                continue;
+            }
+            if (visited[nR][nC]) {
+                continue;
+            }
+            if (num != mapView[nR][nC]) {
+                continue;
+            }
+            count += getCount(nR, nC, num, mapView);
         }
         return count;
     }
